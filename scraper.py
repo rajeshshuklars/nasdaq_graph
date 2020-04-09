@@ -12,13 +12,17 @@ from bs4 import BeautifulSoup
 import json
 import pandas as pd
 
-URL = 'https://money.cnn.com/quote/shareholders/shareholders.html?symb=MSFT&subView=institutional'
 
-r = requests.get(URL)
-soup = BeautifulSoup(r.text, 'html.parser')
+def get_url_text(symbol):
+    
+    URL = 'https://money.cnn.com/quote/shareholders/shareholders.html?symb='+symbol +'&subView=institutional'
 
-table = soup.find_all('table')[4]
-rows = table.find_all('tr')
+    r = requests.get(URL)
+    soup = BeautifulSoup(r.text, 'html.parser')
+
+    table = soup.find_all('table')[4]
+    rows = table.find_all('tr')
+    return rows
 
 #%% list of holder names
 snp_list = []
