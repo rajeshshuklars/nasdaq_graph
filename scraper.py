@@ -19,26 +19,31 @@ def get_url_text(symbol):
 
     r = requests.get(URL)
     soup = BeautifulSoup(r.text, 'html.parser')
-
+    #print(soup)
     table = soup.find_all('table')[4]
     rows = table.find_all('tr')
     return rows
 
 #%% list of holder names
-snp_list = []
-holder_frame = pd.DataFrame(columns = ["Stakeholder", "Stake","Shares owned","Total value ($)", "Shares bought / sold", "Total change"])
-
-for row in rows[1:]:
-    holder_list= []
-    element = row.find_all('td')
-
-    holder_list.append( element[0].getText())
-    holder_list.append( element[1].getText())
-    holder_list.append( element[2].getText())
-    holder_list.append( element[3].getText())
-    holder_list.append( element[4].getText())
-    holder_list.append( element[5].getText())
-
+def extract_shareholder(rows):
+    
+    snp_list = []
+    
+    for row in rows[1:]: 
+        holder_list= []
+        element = row.find_all('td')
+    
+        holder_list.append( element[0].getText())
+        holder_list.append( element[1].getText())
+        holder_list.append( element[2].getText())
+        holder_list.append( element[3].getText())
+        holder_list.append( element[4].getText())
+        holder_list.append( element[5].getText())
+        
+        snp_list.append(holder_list)
+        #print(holder_list)
+        
+    return snp_list
 
 #convert to dataframe first 
     #a_series = pd.Series(holder_list, index = holder_frame.columns)
@@ -50,14 +55,24 @@ for row in rows[1:]:
     #holder_frame.append(holder_list, ignore_index=True)
     #print(element)
     #snp_list.append(holder_dict)
+#%% main app
+holder_frame = pd.DataFrame(columns = [ "Stakeholder", "Stake","Shares owned","Total value ($)", "Shares bought / sold", "Total change","Symbol"])
 
-
-# direct append 
+snp_list  = pd.read_csv('SP 500.csv')
+for i in snp_list['Symbol']: #loop through all companies names in SNP 500
+    print(i)
+    try:
+        raw_text = get_url_text(i)
+    except:
+        continue
+    snp_result = extract_shareholder(raw_text)
+    holder_frame_single = pd.DataFrame(snp_result, columns = ["Stakeholder", "Stake","Shares owned","Total value ($)", "Shares bought / sold", "Total change"])  
+    #holder_frame.loc[len(holder_frame)] = snp_list
+    holder_frame_single['Symbol'] = i
+    holder_frame = holder_frame.append(holder_frame_single, ignore_index=True)
     
     
-    holder_frame.loc[len(holder_frame)] = holder_list
-#print(snp_list)
-
+    # it takes quite a while to run through 500 companies.
 
 
 #%%
